@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class RepositorySerializer(CamelSnakeSerializer):
     provider = serializers.CharField(required=True)
-    owner = serializers.CharField(required=True)
+    owner = serializers.CharField(required=False)
     name = serializers.CharField(required=True)
     external_id = serializers.CharField(required=True)
     organization_id = serializers.IntegerField(required=False, allow_null=True)
@@ -33,6 +33,20 @@ class RepositorySerializer(CamelSnakeSerializer):
     instructions = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     base_commit_sha = serializers.CharField(required=False, allow_null=True)
     provider_raw = serializers.CharField(required=False, allow_null=True)
+
+    def validate(self, data):
+        if not data.get("owner"):
+            if "/" in data["name"]:
+                parts = data["name"].split("/", 1)
+                if len(parts) == 2:
+                    data["owner"] = parts[0]
+                    data["name"] = parts[1]
+            else:
+                raise serializers.ValidationError(
+                    "Either 'owner' must be provided, or 'name' must be in 'owner/repo' format"
+                )
+
+        return data
 
 
 class ProjectRepoMappingField(serializers.Field):
