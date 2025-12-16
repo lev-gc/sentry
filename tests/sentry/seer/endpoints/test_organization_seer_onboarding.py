@@ -299,7 +299,7 @@ class OrganizationSeerOnboardingEndpointTest(APITestCase):
         mock_onboarding_update.assert_called_once()
 
     @patch("sentry.seer.endpoints.organization_seer_onboarding.onboarding_seer_settings_update")
-    def test_project_from_other_organization_forbidden(self, mock_onboarding_update) -> None:
+    def test_post_project_from_other_organization_forbidden(self, mock_onboarding_update) -> None:
         other_org = self.create_organization()
         other_project = self.create_project(organization=other_org)
         response = self.client.post(
@@ -335,7 +335,7 @@ class OrganizationSeerOnboardingEndpointTest(APITestCase):
         assert response.json() == {"detail": "You do not have permission to perform this action."}
 
     @patch("sentry.seer.endpoints.organization_seer_onboarding.onboarding_seer_settings_update")
-    def test_negative_project_id(self, mock_onboarding_update) -> None:
+    def test_post_negative_project_id(self, mock_onboarding_update) -> None:
         response = self.client.post(
             self.path,
             {
@@ -361,5 +361,125 @@ class OrganizationSeerOnboardingEndpointTest(APITestCase):
         assert response.json() == {
             "autofix": {
                 "projectRepoMapping": ["Invalid project ID: -1. Must be a positive integer."]
+            }
+        }
+
+    @patch("sentry.seer.endpoints.organization_seer_onboarding.onboarding_seer_settings_update")
+    def test_post_no_owner(self, mock_onboarding_update) -> None:
+        response = self.client.post(
+            self.path,
+            {
+                "autofix": {
+                    "fixes": True,
+                    "prCreation": True,
+                    "projectRepoMapping": {
+                        str(self.project1.id): [
+                            {
+                                "provider": "github",
+                                "name": "getsentry/sentry",
+                                "externalId": "1234567890",
+                            },
+                        ],
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == 204
+
+        mock_onboarding_update.assert_called_once_with(
+            organization_id=self.org.id,
+            is_rca_enabled=True,
+            is_auto_open_prs_enabled=True,
+            project_repo_dict={
+                self.project1.id: [
+                    SeerRepoDefinition(
+                        provider="github",
+                        owner="getsentry",
+                        name="sentry",
+                        external_id="1029384756",
+                        organization_id=None,
+                        integration_id=None,
+                        branch_name=None,
+                        branch_overrides=[],
+                        instructions=None,
+                        base_commit_sha=None,
+                        provider_raw=None,
+                    )
+                ],
+            },
+        )
+
+    @patch("sentry.seer.endpoints.organization_seer_onboarding.onboarding_seer_settings_update")
+    def test_post_missing_owner_without_slash_in_name_fails(self, mock_onboarding_update) -> None:
+        """Test that validation fails when owner is missing and name doesn't contain '/'."""
+        response = self.client.post(
+            self.path,
+            {
+                "autofix": {
+                    "fixes": True,
+                    "prCreation": True,
+                    "projectRepoMapping": {
+                        str(self.project1.id): [
+                            {
+                                "provider": "github",
+                                "name": "sentry",
+                                "externalId": "1234567890",
+                            },
+                        ],
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == 400
+        mock_onboarding_update.assert_not_called()
+        assert response.json() == {
+            "autofix": {
+                "projectRepoMapping": {
+                    f"project_{self.project1.id}": {
+                        "non_field_errors": [
+                            "Either 'owner' must be provided, or 'name' must be in 'owner/repo' format"
+                        ]
+                    }
+                }
+            }
+        }
+
+    @patch("sentry.seer.endpoints.organization_seer_onboarding.onboarding_seer_settings_update")
+    def test_post_missing_owner_with_invalid_name_format_fails(
+        self, mock_onboarding_update
+    ) -> None:
+        """Test that validation fails when owner is missing and name format is invalid."""
+        response = self.client.post(
+            self.path,
+            {
+                "autofix": {
+                    "fixes": True,
+                    "prCreation": True,
+                    "projectRepoMapping": {
+                        str(self.project1.id): [
+                            {
+                                "provider": "github",
+                                "name": "getsentry/sentry/sentry",
+                                "externalId": "1234567890",
+                            },
+                        ],
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == 400
+        mock_onboarding_update.assert_not_called()
+        assert response.json() == {
+            "autofix": {
+                "projectRepoMapping": {
+                    f"project_{self.project1.id}": {
+                        "non_field_errors": [
+                            "Invalid repository name. Must be in 'owner/repo' format"
+                        ]
+                    }
+                }
             }
         }
