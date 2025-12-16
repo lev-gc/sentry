@@ -38,9 +38,12 @@ class RepositorySerializer(CamelSnakeSerializer):
         if not data.get("owner"):
             if "/" in data["name"]:
                 parts = data["name"].split("/", 1)
-                if len(parts) == 2:
-                    data["owner"] = parts[0]
-                    data["name"] = parts[1]
+                if len(parts) != 2:
+                    raise serializers.ValidationError(
+                        "Invalid repository name. Must be in 'owner/repo' format"
+                    )
+                data["owner"] = parts[0]
+                data["name"] = parts[1]
             else:
                 raise serializers.ValidationError(
                     "Either 'owner' must be provided, or 'name' must be in 'owner/repo' format"
