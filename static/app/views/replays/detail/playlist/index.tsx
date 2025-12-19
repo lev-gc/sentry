@@ -33,6 +33,7 @@ export default function Playlist() {
   const columns = allMobileProj ? MOBILE_COLUMNS : VISIBLE_COLUMNS;
   return (
     <ReplayTable
+      referrer="playlist"
       columns={columns}
       error={null}
       highlightedRowIndex={currentReplayIndex}

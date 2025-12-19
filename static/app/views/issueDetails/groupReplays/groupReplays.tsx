@@ -121,6 +121,7 @@ export default function GroupReplays({group}: Props) {
           </ReplayCountHeader>
         </ReplayHeader>
         <ReplayTable
+          referrer="issues"
           columns={isMobilePlatform ? VISIBLE_COLUMNS_MOBILE : VISIBLE_COLUMNS}
           error={fetchError}
           isPending={isFetching}
@@ -250,6 +251,7 @@ function GroupReplaysTable({
 
   const replayTable = (
     <ReplayTable
+      referrer="issues"
       query={playlistQuery}
       columns={[
         ...(selectedReplay ? [ReplayPlayPauseColumn] : []),

@@ -108,6 +108,7 @@ export default function ReplayDetailsUserBadge({readerResult}: Props) {
   const badge = replayRecord ? (
     <ColumnWrapper gap="md">
       <StyledReplaySessionColumn
+        referrerTable="header"
         replay={replayRecord}
         rowIndex={0}
         columnIndex={0}

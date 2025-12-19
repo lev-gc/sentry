@@ -123,6 +123,7 @@ function ReplaysContent({
   return (
     <Layout.Main width="full">
       <ReplayTable
+        referrer="transactions"
         query={playlistQuery}
         columns={[
           ReplaySessionColumn,
