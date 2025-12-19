@@ -12,9 +12,6 @@ from urllib3.response import HTTPResponse
 from sentry.constants import ObjectStatus
 from sentry.incidents.subscription_processor import SubscriptionProcessor
 from sentry.incidents.utils.types import QuerySubscriptionUpdate
-from sentry.snuba.dataset import Dataset, EntityKey
-from sentry.snuba.models import QuerySubscription
-from sentry.incidents.subscription_processor import SubscriptionProcessor
 from sentry.seer.anomaly_detection.types import (
     AnomalyDetectionSeasonality,
     AnomalyDetectionSensitivity,
@@ -24,8 +21,8 @@ from sentry.seer.anomaly_detection.types import (
 )
 from sentry.sentry_metrics.configuration import UseCaseKey
 from sentry.sentry_metrics.utils import resolve_tag_key
-from sentry.snuba.dataset import Dataset
-from sentry.snuba.models import SnubaQuery
+from sentry.snuba.dataset import Dataset, EntityKey
+from sentry.snuba.models import QuerySubscription, SnubaQuery
 from sentry.testutils.cases import BaseMetricsTestCase
 from sentry.testutils.factories import DEFAULT_EVENT_DATA
 from sentry.testutils.helpers.features import with_feature
@@ -535,6 +532,7 @@ class ProcessUpdateUpsampledCountTest(ProcessUpdateBaseClass):
         # Then resolve it with low upsampled_count (below resolve threshold of 10)
         self.send_upsampled_update(upsampled_count=5.0, time_delta=timedelta(minutes=1))
         assert self.get_detector_state(self.upsampled_detector) == DetectorPriorityLevel.OK
+
 
 class MetricsCrashRateDetectorProcessUpdateTest(ProcessUpdateBaseClass, BaseMetricsTestCase):
     @pytest.fixture(autouse=True)
