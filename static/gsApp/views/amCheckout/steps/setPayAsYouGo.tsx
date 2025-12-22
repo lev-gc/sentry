@@ -13,7 +13,7 @@ import {IconAdd, IconInfo, IconLock, IconSentry, IconSubtract} from 'sentry/icon
 import {t} from 'sentry/locale';
 import {space} from 'sentry/styles/space';
 import {toTitleCase} from 'sentry/utils/string/toTitleCase';
-import type {Space} from 'sentry/utils/theme/theme';
+import type {SpaceSize} from 'sentry/utils/theme';
 import TextBlock from 'sentry/views/settings/components/text/textBlock';
 
 import {PAYG_BUSINESS_DEFAULT, PAYG_TEAM_DEFAULT} from 'getsentry/constants';
@@ -381,7 +381,7 @@ const StyledPanelBody = styled(PanelBody)`
 const TwoColumnContainer = styled('div')<{
   alignItems?: string;
   columnWidth?: string;
-  gap?: Space;
+  gap?: SpaceSize;
   justifyContent?: string;
 }>`
   display: grid;
@@ -400,7 +400,7 @@ const Column = styled('div')`
 const Box = styled('div')<{padding?: string}>`
   border: 1px solid ${p => p.theme.border};
   padding: ${p => p.padding || space(2)};
-  border-radius: ${p => p.theme.borderRadius};
+  border-radius: ${p => p.theme.radius.md};
 `;
 
 const Title = styled('label')`
