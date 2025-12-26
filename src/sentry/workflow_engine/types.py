@@ -279,7 +279,12 @@ class ActionHandler:
         return None
 
     @staticmethod
-    def execute(event_data: WorkflowEventData, action: Action, detector: Detector) -> None:
+    def execute(
+        event_data: WorkflowEventData,
+        action: Action,
+        detector: Detector,
+        notification_uuid: str | None = None,
+    ) -> None:
         # TODO - do we need to pass all of this data to an action?
         raise NotImplementedError
 

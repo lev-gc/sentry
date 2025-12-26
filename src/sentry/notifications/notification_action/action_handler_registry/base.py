@@ -64,5 +64,6 @@ class TicketingActionHandler(IntegrationActionHandler, ABC):
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
+        notification_uuid: str | None = None,
     ) -> None:
-        execute_via_issue_alert_handler(job, action, detector)
+        execute_via_issue_alert_handler(job, action, detector, notification_uuid=notification_uuid)
