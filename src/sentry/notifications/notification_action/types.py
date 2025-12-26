@@ -1,5 +1,4 @@
 import logging
-import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Collection, Sequence
 from dataclasses import asdict
@@ -67,7 +66,7 @@ class LegacyRegistryHandler(ABC):
         event_data: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         """
         Implement this method to handle the specific notification logic for your handler.
@@ -318,7 +317,7 @@ class BaseIssueAlertHandler(ABC):
         event_data: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         """
         This method will create a rule instance from the Action model, and then invoke the legacy registry.
@@ -327,10 +326,6 @@ class BaseIssueAlertHandler(ABC):
         2. activate_downstream_actions
         3. execute_futures (also in post_process process_rules)
         """
-        # Use provided notification_uuid or generate a new one as fallback
-        if notification_uuid is None:
-            notification_uuid = str(uuid.uuid4())
-
         # Create a rule
         rule = cls.create_rule_instance_from_action(action, detector, event_data)
 
@@ -483,7 +478,7 @@ class BaseMetricAlertHandler(ABC):
         event_data: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
 
         event = event_data.event
@@ -509,10 +504,6 @@ class BaseMetricAlertHandler(ABC):
         open_period_context = cls.build_open_period_context(event_data.group)
 
         trigger_status = cls.get_trigger_status(event_data.group)
-
-        # Use provided notification_uuid or generate a new one as fallback
-        if notification_uuid is None:
-            notification_uuid = str(uuid.uuid4())
 
         logger.info(
             "notification_action.execute_via_metric_alert_handler",

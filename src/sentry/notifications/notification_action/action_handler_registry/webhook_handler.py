@@ -1,3 +1,5 @@
+from typing import override
+
 from sentry.notifications.notification_action.utils import execute_via_group_type_registry
 from sentry.workflow_engine.models import Action, Detector
 from sentry.workflow_engine.registry import action_handler_registry
@@ -32,10 +34,11 @@ class WebhookActionHandler(ActionHandler):
         return None
 
     @staticmethod
+    @override
     def execute(
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         execute_via_group_type_registry(job, action, detector, notification_uuid=notification_uuid)

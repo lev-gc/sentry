@@ -1,3 +1,5 @@
+from typing import override
+
 from sentry.notifications.models.notificationaction import ActionTarget
 from sentry.notifications.notification_action.utils import execute_via_group_type_registry
 from sentry.notifications.types import FallthroughChoiceType
@@ -62,10 +64,11 @@ class EmailActionHandler(ActionHandler):
         return cls._config_transformer
 
     @staticmethod
+    @override
     def execute(
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         execute_via_group_type_registry(job, action, detector, notification_uuid=notification_uuid)

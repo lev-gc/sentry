@@ -36,7 +36,7 @@ def execute_via_group_type_registry(
     event_data: WorkflowEventData,
     action: Action,
     detector: Detector,
-    notification_uuid: str | None = None,
+    notification_uuid: str,
 ) -> None:
     """
     Generic "notification action handler" this method will lookup which registry
@@ -91,7 +91,7 @@ def execute_via_issue_alert_handler(
     job: WorkflowEventData,
     action: Action,
     detector: Detector,
-    notification_uuid: str | None = None,
+    notification_uuid: str,
 ) -> None:
     """
     This exists so that all ticketing actions can use the same handler as issue alerts since that's the only way we can
@@ -119,7 +119,7 @@ def execute_via_metric_alert_handler(
     job: WorkflowEventData,
     action: Action,
     detector: Detector,
-    notification_uuid: str | None = None,
+    notification_uuid: str,
 ) -> None:
     """
     This exists so that all metric alert resolution actions can use the same handler as metric alerts

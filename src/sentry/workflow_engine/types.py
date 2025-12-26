@@ -283,7 +283,7 @@ class ActionHandler:
         event_data: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         # TODO - do we need to pass all of this data to an action?
         raise NotImplementedError

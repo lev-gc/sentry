@@ -1,3 +1,5 @@
+from typing import override
+
 from sentry.integrations.types import IntegrationProviderSlug
 from sentry.notifications.notification_action.action_handler_registry.base import (
     IntegrationActionHandler,
@@ -36,11 +38,12 @@ class SlackActionHandler(IntegrationActionHandler):
         return TargetTypeConfigTransformer.from_config_schema(SlackActionHandler.config_schema)
 
     @staticmethod
+    @override
     def execute(
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         from sentry.notifications.notification_action.utils import execute_via_group_type_registry
 

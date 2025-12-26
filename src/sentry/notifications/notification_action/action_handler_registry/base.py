@@ -1,5 +1,6 @@
 import logging
 from abc import ABC
+from typing import override
 
 from sentry.integrations.types import IntegrationProviderSlug
 from sentry.notifications.models.notificationaction import ActionTarget
@@ -60,10 +61,11 @@ class TicketingActionHandler(IntegrationActionHandler, ABC):
         return TargetTypeConfigTransformer.from_config_schema(TicketingActionHandler.config_schema)
 
     @staticmethod
+    @override
     def execute(
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
-        notification_uuid: str | None = None,
+        notification_uuid: str,
     ) -> None:
         execute_via_issue_alert_handler(job, action, detector, notification_uuid=notification_uuid)
