@@ -41,5 +41,6 @@ class OpsgenieActionHandler(IntegrationActionHandler):
         job: WorkflowEventData,
         action: Action,
         detector: Detector,
+        notification_uuid: str | None = None,
     ) -> None:
-        execute_via_group_type_registry(job, action, detector)
+        execute_via_group_type_registry(job, action, detector, notification_uuid=notification_uuid)

@@ -64,7 +64,10 @@ class LegacyRegistryHandler(ABC):
     @staticmethod
     @abstractmethod
     def handle_workflow_action(
-        event_data: WorkflowEventData, action: Action, detector: Detector
+        event_data: WorkflowEventData,
+        action: Action,
+        detector: Detector,
+        notification_uuid: str | None = None,
     ) -> None:
         """
         Implement this method to handle the specific notification logic for your handler.

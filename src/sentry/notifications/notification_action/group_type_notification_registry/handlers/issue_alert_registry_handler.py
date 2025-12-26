@@ -16,10 +16,17 @@ logger = logging.getLogger(__name__)
 @group_type_notification_registry.register(ErrorGroupType.slug)
 class IssueAlertRegistryHandler(LegacyRegistryHandler):
     @staticmethod
-    def handle_workflow_action(job: WorkflowEventData, action: Action, detector: Detector) -> None:
+    def handle_workflow_action(
+        job: WorkflowEventData,
+        action: Action,
+        detector: Detector,
+        notification_uuid: str | None = None,
+    ) -> None:
         try:
             handler = issue_alert_handler_registry.get(action.type)
-            handler.invoke_legacy_registry(job, action, detector)
+            handler.invoke_legacy_registry(
+                job, action, detector, notification_uuid=notification_uuid
+            )
         except NoRegistrationExistsError:
             logger.exception(
                 "No issue alert handler found for action type: %s",
