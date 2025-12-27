@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -75,11 +76,15 @@ class TestAction(TestCase):
         mock_handler = Mock(spec=ActionHandler)
         mock_get_detector.return_value = Mock(spec=Detector, type="error")
 
+        notification_uuid = str(uuid.uuid4())
         with patch.object(self.action, "get_handler", return_value=mock_handler):
-            self.action.trigger(self.mock_event)
+            self.action.trigger(self.mock_event, notification_uuid=notification_uuid)
 
             mock_handler.execute.assert_called_once_with(
-                self.mock_event, self.action, mock_get_detector.return_value
+                self.mock_event,
+                self.action,
+                mock_get_detector.return_value,
+                notification_uuid=notification_uuid,
             )
 
     @patch("sentry.workflow_engine.processors.detector.get_detector_from_event_data")
@@ -90,7 +95,7 @@ class TestAction(TestCase):
 
         with patch.object(self.action, "get_handler", return_value=mock_handler):
             with pytest.raises(Exception, match="Handler failed"):
-                self.action.trigger(self.mock_event)
+                self.action.trigger(self.mock_event, notification_uuid=str(uuid.uuid4()))
 
     @patch("sentry.utils.metrics.incr")
     @patch("sentry.workflow_engine.processors.detector.get_detector_from_event_data")
@@ -99,7 +104,7 @@ class TestAction(TestCase):
         mock_get_detector.return_value = Mock(spec=Detector, type="error")
 
         with patch.object(self.action, "get_handler", return_value=mock_handler):
-            self.action.trigger(self.mock_event)
+            self.action.trigger(self.mock_event, notification_uuid=str(uuid.uuid4()))
 
             mock_handler.execute.assert_called_once()
             mock_incr.assert_called_once_with(

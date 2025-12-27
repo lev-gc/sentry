@@ -77,7 +77,9 @@ class TestPagerDutyMetricAlertHandler(MetricAlertHandlerBase):
         "sentry.notifications.notification_action.metric_alert_registry.PagerDutyMetricAlertHandler.send_alert"
     )
     def test_invoke_legacy_registry(self, mock_send_alert: mock.MagicMock) -> None:
-        self.handler.invoke_legacy_registry(self.event_data, self.action, self.detector)
+        self.handler.invoke_legacy_registry(
+            self.event_data, self.action, self.detector, notification_uuid=str(uuid.uuid4())
+        )
 
         assert mock_send_alert.call_count == 1
         (
@@ -154,7 +156,12 @@ class TestPagerDutyMetricAlertHandler(MetricAlertHandlerBase):
             group=self.group,
         )
 
-        self.handler.invoke_legacy_registry(event_data_with_activity, self.action, self.detector)
+        self.handler.invoke_legacy_registry(
+            event_data_with_activity,
+            self.action,
+            self.detector,
+            notification_uuid=str(uuid.uuid4()),
+        )
 
         assert mock_send_alert.call_count == 1
         (
