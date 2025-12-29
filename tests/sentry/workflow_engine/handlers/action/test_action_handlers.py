@@ -38,7 +38,7 @@ class TestNotificationActionHandler(MetricAlertHandlerBase):
 
         mock_registry_get.assert_called_once_with(ErrorGroupType.slug)
         mock_handler.handle_workflow_action.assert_called_once_with(
-            self.event_data, self.action, self.detector, notification_uuid=notification_uuid
+            self.event_data, self.action, self.detector, notification_uuid
         )
 
     @mock.patch(
@@ -72,7 +72,7 @@ class TestNotificationActionHandler(MetricAlertHandlerBase):
 
         mock_registry_get.assert_called_once_with(MetricIssue.slug)
         mock_handler.handle_workflow_action.assert_called_once_with(
-            self.event_data, self.action, self.detector, notification_uuid=ANY
+            self.event_data, self.action, self.detector, ANY
         )
 
     @mock.patch("sentry.notifications.notification_action.utils.execute_via_issue_alert_handler")
