@@ -26,9 +26,7 @@ class IssueAlertRegistryHandler(LegacyRegistryHandler):
     ) -> None:
         try:
             handler = issue_alert_handler_registry.get(action.type)
-            handler.invoke_legacy_registry(
-                job, action, detector, notification_uuid=notification_uuid
-            )
+            handler.invoke_legacy_registry(job, action, detector, notification_uuid)
         except NoRegistrationExistsError:
             logger.exception(
                 "No issue alert handler found for action type: %s",

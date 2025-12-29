@@ -71,4 +71,4 @@ class EmailActionHandler(ActionHandler):
         detector: Detector,
         notification_uuid: str,
     ) -> None:
-        execute_via_group_type_registry(job, action, detector, notification_uuid=notification_uuid)
+        execute_via_group_type_registry(job, action, detector, notification_uuid)

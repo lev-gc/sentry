@@ -81,10 +81,7 @@ class TestAction(TestCase):
             self.action.trigger(self.mock_event, notification_uuid=notification_uuid)
 
             mock_handler.execute.assert_called_once_with(
-                self.mock_event,
-                self.action,
-                mock_get_detector.return_value,
-                notification_uuid=notification_uuid,
+                self.mock_event, self.action, mock_get_detector.return_value, notification_uuid
             )
 
     @patch("sentry.workflow_engine.processors.detector.get_detector_from_event_data")

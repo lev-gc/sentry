@@ -134,7 +134,7 @@ class Action(DefaultFieldsModel, JSONConfigBase):
             sample_rate=1.0,
         ):
             handler = self.get_handler()
-            handler.execute(event_data, self, detector, notification_uuid=notification_uuid)
+            handler.execute(event_data, self, detector, notification_uuid)
 
         metrics.incr(
             "workflow_engine.action.trigger",

@@ -47,4 +47,4 @@ class SlackActionHandler(IntegrationActionHandler):
     ) -> None:
         from sentry.notifications.notification_action.utils import execute_via_group_type_registry
 
-        execute_via_group_type_registry(job, action, detector, notification_uuid=notification_uuid)
+        execute_via_group_type_registry(job, action, detector, notification_uuid)
