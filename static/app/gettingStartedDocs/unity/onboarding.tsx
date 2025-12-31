@@ -72,19 +72,6 @@ export const onboarding: OnboardingConfig = {
           ],
         },
         {
-          type: 'conditional',
-          condition: params.isLogsSelected,
-          content: [
-            {
-              type: 'text',
-              text: tct(
-                'To enable structured logging, check the [code:Enable Logs] option in the Sentry configuration window.',
-                {code: <code />}
-              ),
-            },
-          ],
-        },
-        {
           type: 'text',
           text: tct(
             'If you like additional contexts you could enable [link:Screenshots].',
@@ -155,42 +142,6 @@ transaction.Finish(); // Mark the transaction as finished and send it to Sentry`
                     ),
                   }
                 ),
-              },
-            ],
-          },
-        ] satisfies OnboardingStep[])
-      : []),
-    ...(params.isLogsSelected
-      ? ([
-          {
-            title: t('Logs'),
-            content: [
-              {
-                type: 'text',
-                text: t(
-                  'Once logging is enabled, you can send logs using the Debug.Log API or directly via the SDK:'
-                ),
-              },
-              {
-                type: 'code',
-                language: 'csharp',
-                code: `using Sentry;
-using UnityEngine;
-
-// Unity's Debug.Log will automatically be captured
-Debug.Log("This log will be sent to Sentry");
-
-// Or use the SDK directly
-SentrySdk.Logger.LogInfo("A simple log message");
-SentrySdk.Logger.LogError("An error log message");`,
-              },
-              {
-                type: 'text',
-                text: tct('Check out [link:the Logs documentation] to learn more.', {
-                  link: (
-                    <ExternalLink href="https://docs.sentry.io/platforms/unity/logs/" />
-                  ),
-                }),
               },
             ],
           },

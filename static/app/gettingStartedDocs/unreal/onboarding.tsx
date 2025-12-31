@@ -47,13 +47,6 @@ void UMyGameInstance::ConfigureSentrySettings(USentrySettings* Settings)
     // We recommend adjusting this value in production.
     Settings->TracesSampleRate = 1.0f;`
         : ''
-    }${
-      params.isLogsSelected
-        ? `
-
-    // Enable structured logging
-    Settings->EnableStructuredLogging = true;`
-        : ''
     }
 }
 
@@ -139,19 +132,6 @@ export const onboarding: OnboardingConfig = {
           ],
         },
         {
-          type: 'conditional',
-          condition: params.isLogsSelected,
-          content: [
-            {
-              type: 'text',
-              text: tct(
-                'To enable structured logging, check the [strong:Enable Structured Logging] option in the Sentry configuration window.',
-                {strong: <strong />}
-              ),
-            },
-          ],
-        },
-        {
           type: 'text',
           text: tct(
             "By default, the SDK initializes automatically when the application starts. Alternatively, you can disable the [strong:Initialize SDK automatically] option, in which case you'll need to initialize the SDK manually",
@@ -220,42 +200,6 @@ Transaction->Finish();`,
                   {
                     link: (
                       <ExternalLink href="https://docs.sentry.io/platforms/unreal/tracing/" />
-                    ),
-                  }
-                ),
-              },
-            ],
-          },
-        ] satisfies OnboardingStep[])
-      : []),
-    ...(params.isLogsSelected
-      ? ([
-          {
-            title: t('Logs'),
-            content: [
-              {
-                type: 'text',
-                text: t(
-                  'Once structured logging is enabled, you can send logs using the AddLog method on the Sentry subsystem:'
-                ),
-              },
-              {
-                type: 'code',
-                language: 'cpp',
-                code: `USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-
-// Send logs at different severity levels
-SentrySubsystem->AddLog(TEXT("A simple log message"), ESentryLevel::Info, TEXT("GameFlow"));
-SentrySubsystem->AddLog(TEXT("Failed to save game data"), ESentryLevel::Error, TEXT("SaveSystem"));`,
-              },
-              {
-                type: 'text',
-                text: tct(
-                  'You can also automatically capture Unreal Engine [code:UE_LOG] calls. Check out [link:the Logs documentation] to learn more.',
-                  {
-                    code: <code />,
-                    link: (
-                      <ExternalLink href="https://docs.sentry.io/platforms/unreal/logs/" />
                     ),
                   }
                 ),

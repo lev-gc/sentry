@@ -26,11 +26,6 @@ int main(void) {
   // We recommend adjusting this value in production.
   sentry_options_set_traces_sample_rate(options, 1.0);`
       : ''
-  }${
-    params.isLogsSelected
-      ? `
-  sentry_options_set_enable_logs(options, 1);`
-      : ''
   }
   sentry_init(options);
 
@@ -150,38 +145,6 @@ sentry_transaction_finish(tx);`,
                   {
                     link: (
                       <ExternalLink href="https://docs.sentry.io/platforms/native/tracing/" />
-                    ),
-                  }
-                ),
-              },
-            ],
-          },
-        ] satisfies OnboardingStep[])
-      : []),
-    ...(params.isLogsSelected
-      ? ([
-          {
-            title: t('Logs'),
-            content: [
-              {
-                type: 'text',
-                text: t(
-                  'Once logging is enabled, you can send logs using the sentry_log_X() APIs:'
-                ),
-              },
-              {
-                type: 'code',
-                language: 'c',
-                code: `sentry_log_info("A simple log message");
-sentry_log_error("A %s log message", "formatted");`,
-              },
-              {
-                type: 'text',
-                text: tct(
-                  'Check out [link:the Logs documentation] to learn more about additional attributes and options.',
-                  {
-                    link: (
-                      <ExternalLink href="https://docs.sentry.io/platforms/native/logs/" />
                     ),
                   }
                 ),
