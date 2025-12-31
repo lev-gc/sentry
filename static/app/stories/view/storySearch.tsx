@@ -19,6 +19,7 @@ import {
   SECTION_ORDER,
   useStoryHierarchy,
 } from 'sentry/stories/view/storyTree';
+import {useFrontmatterIndex} from 'sentry/stories/view/useStoriesLoader';
 import {fzf} from 'sentry/utils/profiling/fzf/fzf';
 import normalizeUrl from 'sentry/utils/url/normalizeUrl';
 import {useHotkeys} from 'sentry/utils/useHotkeys';
@@ -37,7 +38,8 @@ function isSearchSection(item: StoryTreeNode | SearchSection): item is SearchSec
 
 export function StorySearch() {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const hierarchy = useStoryHierarchy();
+  const {data: frontmatterIndex} = useFrontmatterIndex();
+  const hierarchy = useStoryHierarchy(frontmatterIndex);
   useHotkeys([{match: '/', callback: () => inputRef.current?.focus()}]);
 
   const sectionedItems = useMemo(() => {

@@ -9,7 +9,12 @@ import {fzf} from 'sentry/utils/profiling/fzf/fzf';
 import normalizeUrl from 'sentry/utils/url/normalizeUrl';
 import useOrganization from 'sentry/utils/useOrganization';
 
-import {useStoryBookFiles} from './useStoriesLoader';
+import {
+  useFrontmatterIndex,
+  useStoryBookFiles,
+  type ComponentCategory,
+  type FrontmatterIndex,
+} from './useStoriesLoader';
 
 export class StoryTreeNode {
   public name: string;
@@ -107,18 +112,9 @@ export type StoryCategory = 'principles' | 'patterns' | 'core' | 'product';
 
 type StorySection = 'overview' | StoryCategory;
 
-type ComponentSubcategory =
-  | 'typography'
-  | 'layout'
-  | 'buttons'
-  | 'forms'
-  | 'pickers'
-  | 'navigation'
-  | 'status-feedback'
-  | 'data-display'
-  | 'overlays'
-  | 'utilities'
-  | 'shared';
+// ComponentCategory is imported from useStoriesLoader
+// 'shared' is used as a fallback for components without a category
+type ComponentCategoryWithShared = ComponentCategory | 'shared';
 
 export const SECTION_CONFIG: Record<StorySection, {label: string}> = {
   overview: {label: 'Overview'},
@@ -128,72 +124,18 @@ export const SECTION_CONFIG: Record<StorySection, {label: string}> = {
   product: {label: 'Shared'},
 };
 
-const COMPONENT_SUBCATEGORY_CONFIG: Record<
-  ComponentSubcategory,
-  {
-    components: string[];
-    label: string;
-  }
-> = {
-  layout: {
-    label: 'Layout',
-    components: ['composition', 'container', 'flex', 'grid', 'stack'],
-  },
-  typography: {
-    label: 'Typography',
-    components: ['heading', 'prose', 'text', 'inlinecode', 'quote'],
-  },
-  buttons: {
-    label: 'Buttons',
-    components: ['button', 'linkbutton', 'buttonbar'],
-  },
-  forms: {
-    label: 'Forms',
-    components: [
-      'input',
-      'inputgroup',
-      'numberinput',
-      'numberdraginput',
-      'checkbox',
-      'radio',
-      'switch',
-      'slider',
-    ],
-  },
-  pickers: {
-    label: 'Pickers',
-    components: [
-      'select',
-      'multiselect',
-      'compactselect',
-      'composite',
-      'segmentedcontrol',
-    ],
-  },
-  navigation: {
-    label: 'Navigation',
-    components: ['link', 'tabs', 'menulistitem', 'disclosure'],
-  },
-  'status-feedback': {
-    label: 'Status & Feedback',
-    components: ['alert', 'badge', 'toast'],
-  },
-  'data-display': {
-    label: 'Data Display',
-    components: ['avatar', 'image', 'codeblock'],
-  },
-  overlays: {
-    label: 'Overlays',
-    components: ['slideoverpanel', 'tooltip'],
-  },
-  utilities: {
-    label: 'Utilities',
-    components: ['separator', 'interactionstatelayer'],
-  },
-  shared: {
-    label: 'Shared',
-    components: [],
-  },
+const COMPONENT_CATEGORY_CONFIG: Record<ComponentCategoryWithShared, {label: string}> = {
+  layout: {label: 'Layout'},
+  typography: {label: 'Typography'},
+  buttons: {label: 'Buttons'},
+  forms: {label: 'Forms'},
+  pickers: {label: 'Pickers'},
+  navigation: {label: 'Navigation'},
+  status: {label: 'Status'},
+  display: {label: 'Display'},
+  overlays: {label: 'Overlays'},
+  utilities: {label: 'Utilities'},
+  shared: {label: 'Shared'},
 };
 
 export const SECTION_ORDER: StorySection[] = [
@@ -204,15 +146,15 @@ export const SECTION_ORDER: StorySection[] = [
   'product',
 ];
 
-const COMPONENT_SUBCATEGORY_ORDER: ComponentSubcategory[] = [
+const COMPONENT_CATEGORY_ORDER: ComponentCategoryWithShared[] = [
   'layout',
   'typography',
   'buttons',
   'forms',
   'pickers',
   'navigation',
-  'status-feedback',
-  'data-display',
+  'status',
+  'display',
   'overlays',
   'utilities',
   'shared',
@@ -227,7 +169,9 @@ interface StoryHierarchyData {
  * Returns a flat array of all stories in display order (for pagination).
  * Stories are ordered by section, then by subcategory within components.
  */
-export function useFlatStoryList(): StoryTreeNode[] {
+export function useFlatStoryList(
+  frontmatterIndex: FrontmatterIndex | undefined
+): StoryTreeNode[] {
   const files = useStoryBookFiles();
 
   return useMemo(() => {
@@ -236,7 +180,7 @@ export function useFlatStoryList(): StoryTreeNode[] {
     // Group files by section and subcategory
     const grouped = new Map<
       StorySection,
-      {bySubcategory: Map<ComponentSubcategory, string[]>; direct: string[]}
+      {bySubcategory: Map<ComponentCategoryWithShared, string[]>; direct: string[]}
     >();
 
     for (const section of SECTION_ORDER) {
@@ -244,7 +188,8 @@ export function useFlatStoryList(): StoryTreeNode[] {
     }
 
     for (const file of files) {
-      const loc = inferStoryLocation(file);
+      const category = frontmatterIndex?.[file]?.category;
+      const loc = inferStoryLocation(file, category);
       const sectionData = grouped.get(loc.section);
       if (!sectionData) {
         continue;
@@ -272,7 +217,7 @@ export function useFlatStoryList(): StoryTreeNode[] {
       }
 
       if (section === 'core') {
-        for (const subcategory of COMPONENT_SUBCATEGORY_ORDER) {
+        for (const subcategory of COMPONENT_CATEGORY_ORDER) {
           const subcategoryFiles = sectionData.bySubcategory.get(subcategory);
           if (!subcategoryFiles) {
             continue;
@@ -288,14 +233,16 @@ export function useFlatStoryList(): StoryTreeNode[] {
     }
 
     return result;
-  }, [files]);
+  }, [files, frontmatterIndex]);
 }
 
 /**
  * Returns a hierarchical structure for sidebar rendering.
  * Sections contain stories, and the components section has subcategories.
  */
-export function useStoryHierarchy(): Map<StorySection, StoryHierarchyData> {
+export function useStoryHierarchy(
+  frontmatterIndex: FrontmatterIndex | undefined
+): Map<StorySection, StoryHierarchyData> {
   const files = useStoryBookFiles();
 
   return useMemo(() => {
@@ -308,10 +255,11 @@ export function useStoryHierarchy(): Map<StorySection, StoryHierarchyData> {
 
     // Collect files by section
     const productFiles: string[] = [];
-    const coreFilesBySubcategory = new Map<ComponentSubcategory, string[]>();
+    const coreFilesBySubcategory = new Map<ComponentCategoryWithShared, string[]>();
 
     for (const file of files) {
-      const loc = inferStoryLocation(file);
+      const category = frontmatterIndex?.[file]?.category;
+      const loc = inferStoryLocation(file, category);
       const sectionData = hierarchy.get(loc.section);
       if (!sectionData) {
         continue;
@@ -361,7 +309,7 @@ export function useStoryHierarchy(): Map<StorySection, StoryHierarchyData> {
     }
 
     return hierarchy;
-  }, [files]);
+  }, [files, frontmatterIndex]);
 }
 
 function inferFileCategory(path: string): StoryCategory {
@@ -383,10 +331,10 @@ function inferFileCategory(path: string): StoryCategory {
 // New hierarchical inference system
 interface StoryLocation {
   section: StorySection;
-  subcategory?: ComponentSubcategory;
+  subcategory?: ComponentCategoryWithShared;
 }
 
-function inferStoryLocation(path: string): StoryLocation {
+function inferStoryLocation(path: string, category?: ComponentCategory): StoryLocation {
   // Overview section
   if (isOverviewFile(path)) {
     return {section: 'overview'};
@@ -402,24 +350,14 @@ function inferStoryLocation(path: string): StoryLocation {
     return {section: 'patterns'};
   }
 
-  // Components - determine subcategory
+  // Components - use frontmatter category or fallback to 'shared'
   if (isCoreFile(path)) {
-    const componentName = inferComponentName(path).toLowerCase();
-    const subcategory = inferComponentSubcategory(componentName);
+    const subcategory: ComponentCategoryWithShared = category ?? 'shared';
     return {section: 'core', subcategory};
   }
 
   // Shared (non-core components)
   return {section: 'product'};
-}
-
-function inferComponentSubcategory(componentName: string): ComponentSubcategory {
-  for (const [subcategory, config] of Object.entries(COMPONENT_SUBCATEGORY_CONFIG)) {
-    if (config.components.includes(componentName)) {
-      return subcategory as ComponentSubcategory;
-    }
-  }
-  return 'shared';
 }
 
 function isOverviewFile(file: string) {
@@ -541,19 +479,19 @@ function sortTreeRecursively(node: StoryTreeNode) {
  * Creates folder nodes for each subcategory (Typography, Buttons, Layout, etc.).
  */
 function buildComponentTree(
-  filesBySubcategory: Map<ComponentSubcategory, string[]>
+  filesBySubcategory: Map<ComponentCategoryWithShared, string[]>
 ): StoryTreeNode[] {
   const roots: StoryTreeNode[] = [];
 
   // Iterate in display order
-  for (const subcategory of COMPONENT_SUBCATEGORY_ORDER) {
+  for (const subcategory of COMPONENT_CATEGORY_ORDER) {
     const files = filesBySubcategory.get(subcategory);
     if (!files || files.length === 0) {
       continue;
     }
 
     // Create folder node for subcategory
-    const label = COMPONENT_SUBCATEGORY_CONFIG[subcategory].label;
+    const label = COMPONENT_CATEGORY_CONFIG[subcategory].label;
     if (files[0]) {
       const folderNode = new StoryTreeNode(label, subcategory, files[0]);
 
@@ -601,7 +539,12 @@ function StoryTree({nodes, ...htmlProps}: Props) {
  * All subcategories are collapsible sections using StoryTree.
  */
 export function CategorizedStoryTree() {
-  const hierarchy = useStoryHierarchy();
+  const {data: frontmatterIndex, isLoading} = useFrontmatterIndex();
+  const hierarchy = useStoryHierarchy(frontmatterIndex);
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <ul>

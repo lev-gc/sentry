@@ -9,12 +9,13 @@ import useOrganization from 'sentry/utils/useOrganization';
 
 import type {StoryTreeNode} from './storyTree';
 import {useFlatStoryList} from './storyTree';
-import {type StoryDescriptor} from './useStoriesLoader';
+import {useFrontmatterIndex, type StoryDescriptor} from './useStoriesLoader';
 import {useStory} from './useStory';
 
 export function StoryFooter() {
   const {story} = useStory();
-  const stories = useFlatStoryList();
+  const {data: frontmatterIndex} = useFrontmatterIndex();
+  const stories = useFlatStoryList(frontmatterIndex);
   const pagination = findPreviousAndNextStory(story, stories);
   const organization = useOrganization();
 

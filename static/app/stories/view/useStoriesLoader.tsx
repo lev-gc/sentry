@@ -12,6 +12,18 @@ export interface StoryResources {
   js?: string;
 }
 
+export type ComponentCategory =
+  | 'typography'
+  | 'layout'
+  | 'buttons'
+  | 'forms'
+  | 'pickers'
+  | 'navigation'
+  | 'status'
+  | 'display'
+  | 'overlays'
+  | 'utilities';
+
 export interface MDXStoryDescriptor {
   exports: {
     default: React.ComponentType | any;
@@ -19,6 +31,7 @@ export interface MDXStoryDescriptor {
     frontmatter?: {
       description: string;
       title: string;
+      category?: ComponentCategory;
       layout?: 'document';
       resources?: StoryResources;
       source?: string;
@@ -48,6 +61,38 @@ export function useStoryBookFiles() {
       ),
     []
   );
+}
+
+export type FrontmatterIndex = Record<
+  string,
+  MDXStoryDescriptor['exports']['frontmatter'] | undefined
+>;
+
+/**
+ * Pre-loads frontmatter for all MDX files to enable category-based grouping
+ * during tree building (before individual stories are loaded).
+ */
+export function useFrontmatterIndex(): UseQueryResult<FrontmatterIndex, Error> {
+  const files = useStoryBookFiles();
+  const mdxFiles = useMemo(() => files.filter(f => f.endsWith('.mdx')), [files]);
+
+  return useQuery({
+    queryKey: ['frontmatter-index', mdxFiles],
+    queryFn: async () => {
+      const results = await Promise.all(
+        mdxFiles.map(async file => {
+          try {
+            const story = await mdxContext(file.replace(/^app\//, './'));
+            return [file, story.frontmatter] as const;
+          } catch {
+            return [file, undefined] as const;
+          }
+        })
+      );
+      return Object.fromEntries(results);
+    },
+    staleTime: Infinity,
+  });
 }
 
 async function importStory(filename: string): Promise<StoryDescriptor> {

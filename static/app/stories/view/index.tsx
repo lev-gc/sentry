@@ -18,7 +18,7 @@ import {StoryLanding} from './landing';
 import {StoryExports} from './storyExports';
 import {StoryHeader} from './storyHeader';
 import {useStoryDarkModeTheme} from './useStoriesDarkMode';
-import {useStoriesLoader} from './useStoriesLoader';
+import {useFrontmatterIndex, useStoriesLoader} from './useStoriesLoader';
 
 export function useStoryParams(): {storyCategory?: StoryCategory; storySlug?: string} {
   const location = useLocation();
@@ -54,7 +54,8 @@ function StoriesLanding() {
 function StoryDetail() {
   const location = useLocation();
   const {storyCategory, storySlug} = useStoryParams();
-  const stories = useFlatStoryList();
+  const {data: frontmatterIndex} = useFrontmatterIndex();
+  const stories = useFlatStoryList(frontmatterIndex);
 
   let storyNode = getStoryFromParams(stories, {
     category: storyCategory,
