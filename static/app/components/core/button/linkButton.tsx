@@ -8,7 +8,7 @@ import {Tooltip} from 'sentry/components/core/tooltip';
 import {IconDefaultsProvider} from 'sentry/icons/useIconDefaults';
 
 import {DO_NOT_USE_BUTTON_ICON_SIZES as BUTTON_ICON_SIZES} from './styles';
-import {DO_NOT_USE_getChonkButtonStyles as getChonkButtonStyles} from './styles.chonk';
+import {DO_NOT_USE_getButtonStyles as getChonkButtonStyles} from './styles.chonk';
 import type {
   DO_NOT_USE_CommonButtonProps as CommonButtonProps,
   DO_NOT_USE_LinkButtonProps as LinkButtonProps,

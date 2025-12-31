@@ -12,3 +12,5 @@ export const DO_NOT_USE_BUTTON_ICON_SIZES: Record<
   sm: 'sm',
   md: 'sm',
 };
+
+export {DO_NOT_USE_getButtonStyles} from './styles.chonk';
