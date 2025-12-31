@@ -3777,6 +3777,14 @@ register(
     flags=FLAG_AUTOMATOR_MODIFIABLE,
 )
 
+# Disable paranoia for sentry apps
+register(
+    "sentry-apps.disable-paranoia",
+    type=Bool,
+    default=False,
+    flags=FLAG_AUTOMATOR_MODIFIABLE,
+)
+
 # Killswitch for web vital issue detection
 register(
     "issue-detection.web-vitals-detection.enabled",
