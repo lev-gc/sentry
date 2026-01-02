@@ -108,8 +108,22 @@ describe('ProjectDetail', () => {
       initialRouterConfig,
     });
 
-    expect(await screen.findByText(/project details/i)).toBeInTheDocument();
+    // "Project Details" occurs once in breadcrumbs, and once in
+    // deprecation dialog.
+    expect(await screen.findAllByText(/project details/i)).toHaveLength(2);
     expect(screen.getByText(project.slug)).toBeInTheDocument();
+  });
+
+  it('Render deprecation dialog', async () => {
+    ProjectsStore.loadInitialData([project]);
+    setupMockResponses();
+
+    render(<ProjectDetail />, {
+      organization,
+      initialRouterConfig,
+    });
+
+    expect(await screen.findByText(/similar charts are available/i)).toBeInTheDocument();
   });
 
   it('Sync project with slug', async () => {
