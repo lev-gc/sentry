@@ -1,4 +1,4 @@
-import {Fragment, useCallback, useEffect, useMemo} from 'react';
+import {Fragment, useCallback, useEffect, useMemo, useState} from 'react';
 import styled from '@emotion/styled';
 import pick from 'lodash/pick';
 
@@ -7,8 +7,11 @@ import {updateProjects} from 'sentry/actionCreators/pageFilters';
 import {fetchTagValues} from 'sentry/actionCreators/tags';
 import Feature from 'sentry/components/acl/feature';
 import {Breadcrumbs} from 'sentry/components/breadcrumbs';
+import {Alert} from 'sentry/components/core/alert';
+import {Button} from 'sentry/components/core/button';
 import {ButtonBar} from 'sentry/components/core/button/buttonBar';
 import {LinkButton} from 'sentry/components/core/button/linkButton';
+import {Link} from 'sentry/components/core/link';
 import CreateAlertButton from 'sentry/components/createAlertButton';
 import ErrorBoundary from 'sentry/components/errorBoundary';
 import FeedbackButton from 'sentry/components/feedbackButton/feedbackButton';
@@ -20,8 +23,8 @@ import PageFiltersContainer from 'sentry/components/organizations/pageFilters/co
 import MissingProjectMembership from 'sentry/components/projects/missingProjectMembership';
 import SentryDocumentTitle from 'sentry/components/sentryDocumentTitle';
 import {DEFAULT_RELATIVE_PERIODS} from 'sentry/constants';
-import {IconSettings} from 'sentry/icons';
-import {t} from 'sentry/locale';
+import {IconClose, IconSettings} from 'sentry/icons';
+import {t, tctCode} from 'sentry/locale';
 import {space} from 'sentry/styles/space';
 import {defined} from 'sentry/utils';
 import {decodeScalar} from 'sentry/utils/queryString';
@@ -79,6 +82,7 @@ export default function ProjectDetail() {
     }
     return ['chart1'];
   }, [hasTransactions, hasSessions]);
+  const [showProjectPageDeprecation, setShowProjectPageDeprecation] = useState(true);
 
   const onRetryProjects = useCallback(() => {
     fetchOrganizationDetails(api, params.orgId);
@@ -209,6 +213,38 @@ export default function ProjectDetail() {
 
             <Layout.Body noRowGap>
               <Layout.Main>
+                {showProjectPageDeprecation && (
+                  <Alert.Container>
+                    <Alert
+                      variant="info"
+                      trailingItems={
+                        <StyledCloseButton
+                          icon={<IconClose size="sm" />}
+                          aria-label={t('Close')}
+                          onClick={() => {
+                            setShowProjectPageDeprecation(false);
+                          }}
+                          size="zero"
+                          borderless
+                        />
+                      }
+                    >
+                      {tctCode(
+                        'Project Details will be removed soon. Find this project’s settings under [settingsLink:Settings]. Similar charts are available on the [sessionHealth:Session Health] and [backendOverview:Backend Overview] dashboards.',
+                        {
+                          settingsLink: (
+                            <Link
+                              to={`/settings/${params.orgId}/projects/${params.projectId}/`}
+                            />
+                          ),
+                          sessionHealth: <Link to="/insights/frontend/sessions/" />,
+                          backendOverview: <Link to="/insights/backend/" />,
+                        }
+                      )}
+                    </Alert>
+                  </Alert.Container>
+                )}
+
                 <ProjectFiltersWrapper>
                   <ProjectFilters
                     query={query}
@@ -289,4 +325,15 @@ export default function ProjectDetail() {
 
 const ProjectFiltersWrapper = styled('div')`
   margin-bottom: ${space(2)};
+`;
+
+const StyledCloseButton = styled(Button)`
+  background-color: transparent;
+  transition: opacity 0.1s linear;
+
+  &:hover,
+  &:focus {
+    background-color: transparent;
+    opacity: 1;
+  }
 `;
