@@ -340,10 +340,9 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "targetIdentifier": str(self.user.id),
         }
         Rule.objects.filter(project=self.event.project).delete()
-        Rule.objects.create(
-            project=self.event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data]},
-        )
+        rule = self.create_project_rule(project=self.event.project, action_data=[action_data])
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with self.tasks():
             post_process_group(
@@ -368,10 +367,9 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "fallthroughType": FallthroughChoiceType.ALL_MEMBERS.value,
         }
         Rule.objects.filter(project=self.event.project).delete()
-        Rule.objects.create(
-            project=self.event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data]},
-        )
+        rule = self.create_project_rule(project=self.event.project, action_data=[action_data])
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with self.tasks():
             post_process_group(
@@ -396,10 +394,9 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "fallthroughType": FallthroughChoiceType.NO_ONE.value,
         }
         Rule.objects.filter(project=self.event.project).delete()
-        Rule.objects.create(
-            project=self.event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data]},
-        )
+        rule = self.create_project_rule(project=self.event.project, action_data=[action_data])
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with self.tasks():
             post_process_group(
@@ -420,10 +417,9 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "targetType": ActionTargetType.ISSUE_OWNERS.value,
         }
         Rule.objects.filter(project=self.event.project).delete()
-        Rule.objects.create(
-            project=self.event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data]},
-        )
+        rule = self.create_project_rule(project=self.event.project, action_data=[action_data])
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with self.tasks():
             post_process_group(
@@ -453,10 +449,9 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "targetIdentifier": str(self.user.id),
         }
         Rule.objects.filter(project=event.project).delete()
-        Rule.objects.create(
-            project=event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data]},
-        )
+        rule = self.create_project_rule(project=event.project, action_data=[action_data])
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with (
             self.tasks(),
@@ -496,10 +491,11 @@ class NotifyLegacyEmailTest(NotifyEmailTest):
             "targetIdentifier": str(team_workflow.id),
         }
         Rule.objects.filter(project=self.event.project).delete()
-        Rule.objects.create(
-            project=self.event.project,
-            data={"conditions": [self.condition_data], "actions": [action_data, inject_workflow]},
+        rule = self.create_project_rule(
+            project=self.event.project, action_data=[action_data, inject_workflow]
         )
+        rule.data["conditions"] = [self.condition_data]
+        rule.save()
 
         with self.tasks():
             post_process_group(
