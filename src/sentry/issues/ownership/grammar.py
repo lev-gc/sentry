@@ -176,7 +176,7 @@ class Matcher(namedtuple("Matcher", "type pattern")):
         frames: Sequence[Mapping[str, Any]],
         keys: Sequence[str],
         match_frame_value_func: Callable[[str | None, str], bool] = lambda val, pattern: bool(
-            glob_match(val, pattern, ignorecase=True, path_normalize=True)
+            glob_match(val, pattern, doublestar=True, ignorecase=True, path_normalize=True)
         ),
         match_frame_func: Callable[[Mapping[str, Any]], bool] = lambda _: True,
     ) -> bool:
