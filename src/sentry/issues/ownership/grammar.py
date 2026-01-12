@@ -100,6 +100,9 @@ class Rule(namedtuple("Rule", "matcher owners")):
     ) -> bool | Any:
         return self.matcher.test(data, munged_data)
 
+    def test_frame(self, frame: Mapping[str, Any], keys: Sequence[str]) -> bool:
+        return self.matcher.test_frame(frame, keys)
+
 
 class Matcher(namedtuple("Matcher", "type pattern")):
     """
@@ -181,17 +184,32 @@ class Matcher(namedtuple("Matcher", "type pattern")):
         match_frame_func: Callable[[Mapping[str, Any]], bool] = lambda _: True,
     ) -> bool:
         for frame in frames:
-            if not match_frame_func(frame):
+            if self._test_frame(frame, keys, match_frame_value_func, match_frame_func):
+                return True
+        return False
+
+    def test_frame(self, frame: Mapping[str, Any], keys: Sequence[str]) -> bool:
+        if self.type == PATH:
+            return self._test_frame(frame, keys)
+        return False
+
+    def _test_frame(
+        self,
+        frame: Mapping[str, Any],
+        keys: Sequence[str],
+        match_frame_value_func: Callable[[str | None, str], bool] = lambda val, pattern: bool(
+            glob_match(val, pattern, doublestar=True, ignorecase=True, path_normalize=True)
+        ),
+        match_frame_func: Callable[[Mapping[str, Any]], bool] = lambda _: True,
+    ) -> bool:
+        if not match_frame_func(frame):
+            return False
+        for key in keys:
+            value = frame.get(key)
+            if not value:
                 continue
-
-            for key in keys:
-                value = frame.get(key)
-                if not value:
-                    continue
-
-                if match_frame_value_func(value, self.pattern):
-                    return True
-
+            if match_frame_value_func(value, self.pattern):
+                return True
         return False
 
     def test_tag(self, data: Mapping[str, Any]) -> bool:

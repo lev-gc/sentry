@@ -14,7 +14,7 @@ from sentry.backup.scopes import RelocationScope
 from sentry.db.models import Model, region_silo_model, sane_repr
 from sentry.db.models.fields import FlexibleForeignKey, JSONField
 from sentry.eventstore.models import Event, GroupEvent
-from sentry.issues.ownership.grammar import Matcher, Rule, load_schema, resolve_actors
+from sentry.issues.ownership.grammar import Matcher, Rule, load_schema, resolve_actors, PATH
 from sentry.models.activity import Activity
 from sentry.models.group import Group
 from sentry.models.groupowner import OwnerRuleType
@@ -384,7 +384,34 @@ class ProjectOwnership(Model):
             tags={"ownership_type": ownership_type},
         )
 
-        return [rule for rule in rules if rule.test(data, munged_data)]
+        frames, keys = munged_data
+        max_frame_index = -1
+
+        # Identify path-based rules
+        path_rules = [r for r in rules if r.matcher.type == PATH]
+
+        # Find the highest frame index that matches any path rule
+        for i in range(len(frames) - 1, -1, -1):
+            frame = frames[i]
+            match_found = False
+            for rule in path_rules:
+                if rule.test_frame(frame, keys):
+                    match_found = True
+                    break
+            if match_found:
+                max_frame_index = i
+                break
+
+        final_rules = []
+        for rule in rules:
+            if rule.matcher.type == PATH:
+                if max_frame_index != -1 and rule.test_frame(frames[max_frame_index], keys):
+                    final_rules.append(rule)
+            else:
+                if rule.test(data, munged_data):
+                    final_rules.append(rule)
+
+        return final_rules
 
 
 def process_resource_change(instance, change, **kwargs):
